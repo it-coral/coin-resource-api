@@ -1,16 +1,11 @@
 from django.core.urlresolvers import reverse
 from django.views.generic import DetailView, ListView, RedirectView, UpdateView
-
 from django.contrib.auth.mixins import LoginRequiredMixin
-
 from .models import User
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from allauth.account.views import ConfirmEmailView
-
-
 
 
 @api_view()
@@ -64,7 +59,6 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self):
         # Only get the User record for the user making the request
         return User.objects.get(username=self.request.user.username)
-
 
 class UserListView(LoginRequiredMixin, ListView):
     model = User
