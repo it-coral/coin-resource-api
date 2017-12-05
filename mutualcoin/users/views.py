@@ -1,18 +1,29 @@
-from django.core.urlresolvers import reverse
-from django.views.generic import DetailView, ListView, RedirectView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, unicode_literals
+from allauth import app_settings
+from allauth.account.views import ConfirmEmailView
+from django.http import Http404
+from django.views import View
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
+
 from .models import User
+from .serializers import UserModelSerializer, UserDetailsSerializer, VerifyEmailSerializer
+from rest_framework.viewsets import ModelViewSet
+
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from allauth.account.views import ConfirmEmailView
+
 
 
 @api_view()
 def null_view(request):
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
 class VerifyEmailView(APIView, ConfirmEmailView):
+    permission_classes = (AllowAny,)
     allowed_methods = ('POST', 'OPTIONS', 'HEAD')
 
     def get_serializer(self, *args, **kwargs):
@@ -29,39 +40,30 @@ class VerifyEmailView(APIView, ConfirmEmailView):
 confirm_email = VerifyEmailView.as_view()
 
 
-class UserDetailView(LoginRequiredMixin, DetailView):
+class MultiSerializerViewSetMixin(object):
+    def get_serializer_class(self):
+        try:
+            return self.serializer_action_classes[self.action]
+        except (KeyError, AttributeError):
+            return super(MultiSerializerViewSetMixin, self).get_serializer_class()
+
+
+class UserModelViewSet(ModelViewSet):
     model = User
-    # These next two lines tell the view to index lookups by username
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
+    queryset = User.objects.all()
+    serializer_class = UserModelSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
-class UserRedirectView(LoginRequiredMixin, RedirectView):
-    permanent = False
-
-    def get_redirect_url(self):
-        return reverse('users:detail',
-                       kwargs={'username': self.request.user.username})
 
 
-class UserUpdateView(LoginRequiredMixin, UpdateView):
 
-    fields = ['name', ]
 
-    # we already imported User in the view code above, remember?
-    model = User
 
-    # send the user back to their own page after a successful update
-    def get_success_url(self):
-        return reverse('users:detail',
-                       kwargs={'username': self.request.user.username})
-
-    def get_object(self):
-        # Only get the User record for the user making the request
-        return User.objects.get(username=self.request.user.username)
-
-class UserListView(LoginRequiredMixin, ListView):
-    model = User
-    # These next two lines tell the view to index lookups by username
-    slug_field = 'username'
-    slug_url_kwarg = 'username'
