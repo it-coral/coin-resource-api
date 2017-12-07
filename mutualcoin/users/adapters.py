@@ -7,7 +7,7 @@ class AccountAdapter(DefaultAccountAdapter):
 
     def send_mail(self, template_prefix, email, context):
         context['activate_url'] = settings.URL_FRONT + \
-            'access/verify-email/' + context['key']
+            'auth/verify-email/' + context['key']
         msg = self.render_mail(template_prefix, email, context)
         msg.content_subtype = 'html'
         msg.send()

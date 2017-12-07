@@ -7,10 +7,14 @@ from django.views import defaults as default_views
 from rest_framework_jwt.views import obtain_jwt_token
 from rest_framework_jwt.views import refresh_jwt_token
 from mutualcoin.users.views import null_view, confirm_email
+from mutualcoin.users.views import UserModelViewSet
 
 from rest_framework import routers
 router = routers.DefaultRouter()
 
+# app routes
+# Admin Routes
+router.register(r'users', UserModelViewSet)
 
 urlpatterns = [
     # url(r'^$', TemplateView.as_view(template_name='pages/home.html'), name='home'),

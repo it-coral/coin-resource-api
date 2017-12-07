@@ -59,5 +59,4 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # 3rd party library settings
 # ------------------------------------------------------------------------------
-
-URL_FRONT = 'http://localhost:8080/app/#/'
+URL_FRONT = 'http://localhost:8082/app/#/'
