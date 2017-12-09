@@ -12,7 +12,8 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from rest_framework_tracking.mixins import LoggingMixin
+from rest_framework.decorators import list_route, detail_route
 
 
 @api_view()
@@ -47,14 +48,18 @@ class MultiSerializerViewSetMixin(object):
             return super(MultiSerializerViewSetMixin, self).get_serializer_class()
 
 
-class UserModelViewSet(ModelViewSet):
+class UserModelViewSet(LoggingMixin, ModelViewSet):
     model = User
     queryset = User.objects.all()
     serializer_class = UserModelSerializer
 
+    @list_route(methods=['post', 'put'])
+    def approve_user(self, request):
+        print(request['id'])
+        return None
+        
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()

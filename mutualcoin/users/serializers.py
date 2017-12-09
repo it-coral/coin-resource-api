@@ -51,7 +51,8 @@ class UserModelSerializer(ModelSerializer):
             'phone',
             'first_name',
             'last_name',
-            
+            'date_joined', 
+            'last_login'            
         ]
 
         read_only_fields = (
