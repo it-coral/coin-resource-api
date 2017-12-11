@@ -56,6 +56,7 @@ THIRD_PARTY_APPS = [
     'rest_auth',
     'corsheaders',
     'rest_framework_tracking',
+    'phonenumber_field',
 ]
 
 # Apps specific for this project go here.

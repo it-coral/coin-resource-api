@@ -4,13 +4,14 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.signals import user_logged_in
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 
 @python_2_unicode_compatible
 class User(AbstractUser):
 
-    phone = models.CharField(null=True, max_length=255)
+    phone = PhoneNumberField()
     zip_code = models.CharField(null=True, max_length=6)
     pin = models.CharField(null=True, max_length=4)
     approved = models.BooleanField(default=False)
