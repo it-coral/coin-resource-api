@@ -5,7 +5,11 @@ Production settings for mutualcoin project.
 - Use Amazon's S3 for storing uploaded media
 - Use mailgun to send emails
 - Use Redis for cache
+
+
 """
+
+
 
 from .base import *  # noqa
 
@@ -71,21 +75,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # ------------------------------------------------------------------------------
 DEFAULT_FROM_EMAIL = env('DJANGO_DEFAULT_FROM_EMAIL',
                          default='mutualcoin <noreply@mutualcoin.fund>')
-EMAIL_SUBJECT_PREFIX = env('DJANGO_EMAIL_SUBJECT_PREFIX', default='MutualCoin')
+EMAIL_SUBJECT_PREFIX = env('DJANGO_EMAIL_SUBJECT_PREFIX', default='[mutualcoin]')
 SERVER_EMAIL = env('DJANGO_SERVER_EMAIL', default=DEFAULT_FROM_EMAIL)
 
 # Anymail with Mailgun
 INSTALLED_APPS += ['anymail', ]
 ANYMAIL = {
-    # 'MAILGUN_API_KEY': env('DJANGO_MAILGUN_API_KEY'),
-    # 'MAILGUN_SENDER_DOMAIN': env('MAILGUN_SENDER_DOMAIN')
+    'MAILGUN_API_KEY': env('DJANGO_MAILGUN_API_KEY'),
+    'MAILGUN_SENDER_DOMAIN': env('MAILGUN_SENDER_DOMAIN')
 }
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_HOST_PASSWORD = 'alakwa336278'
-EMAIL_HOST_USER = 'boscoalakwa'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
 # TEMPLATE CONFIGURATION
 # ------------------------------------------------------------------------------
@@ -101,7 +100,9 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
 
 # Use the Heroku-style specification
 # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-# DATABASES['default'] = env.db('DATABASE_URL', default="postgres://<barbary>:<root>@138.197.125.81:<5432>/<barbary>")
+DATABASES['default'] = env.db('DATABASE_URL')
+DATABASES['default']['CONN_MAX_AGE'] = env.int('CONN_MAX_AGE', default=60)
+
 
 # CACHING
 # ------------------------------------------------------------------------------
@@ -121,70 +122,56 @@ CACHES = {
 }
 
 
-# Sentry Configuration
-# SENTRY_DSN = env('DJANGO_SENTRY_DSN')
-# SENTRY_CLIENT = env('DJANGO_SENTRY_CLIENT', default='raven.contrib.django.raven_compat.DjangoClient')
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': True,
-#     'root': {
-#         'level': 'WARNING',
-#         'handlers': ['sentry', ],
-#     },
-#     'formatters': {
-#         'verbose': {
-#             'format': '%(levelname)s %(asctime)s %(module)s '
-#                       '%(process)d %(thread)d %(message)s'
-#         },
-#     },
-#     'handlers': {
-#         'sentry': {
-#             'level': 'ERROR',
-#             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-#         },
-#         'console': {
-#             'level': 'DEBUG',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'verbose'
-#         }
-#     },
-#     'loggers': {
-#         'django.db.backends': {
-#             'level': 'ERROR',
-#             'handlers': ['console', ],
-#             'propagate': False,
-#         },
-#         'raven': {
-#             'level': 'DEBUG',
-#             'handlers': ['console', ],
-#             'propagate': False,
-#         },
-#         'sentry.errors': {
-#             'level': 'DEBUG',
-#             'handlers': ['console', ],
-#             'propagate': False,
-#         },
-#         'django.security.DisallowedHost': {
-#             'level': 'ERROR',
-#             'handlers': ['console', 'sentry', ],
-#             'propagate': False,
-#         },
-#     },
-# }
-# SENTRY_CELERY_LOGLEVEL = env.int('DJANGO_SENTRY_LOG_LEVEL', logging.INFO)
-# RAVEN_CONFIG = {
-#     'CELERY_LOGLEVEL': env.int('DJANGO_SENTRY_LOG_LEVEL', logging.INFO),
-#     'DSN': SENTRY_DSN
-# }
+# LOGGING CONFIGURATION
+# ------------------------------------------------------------------------------
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#logging
+# A sample logging configuration. The only tangible logging
+# performed by this configuration is to send an email to
+# the site admins on every HTTP 500 error when DEBUG=False.
+# See https://docs.djangoproject.com/en/dev/topics/logging for
+# more details on how to customize your logging configuration.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s '
+                      '%(process)d %(thread)d %(message)s'
+        },
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false', ],
+            'class': 'django.utils.log.AdminEmailHandler'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins', ],
+            'level': 'ERROR',
+            'propagate': True
+        },
+        'django.security.DisallowedHost': {
+            'level': 'ERROR',
+            'handlers': ['console', 'mail_admins', ],
+            'propagate': True
+        }
+    }
+}
 
 # Custom Admin URL, use {% url 'admin:index' %}
-# ADMIN_URL = env('DJANGO_ADMIN_URL', default="^")
-ADMIN_URL = r'^admin-dashboard'
-
-# DATABASE_URL = env('DATABASE_URL')
+ADMIN_URL = env('DJANGO_ADMIN_URL')
 
 # Your production stuff: Below this line define 3rd party library settings
 # ------------------------------------------------------------------------------
-
-URL_FRONT = 'https://investors.mutualcoin.fund/#/'
-ACCOUNT_PASSWORD_RESET_CONFIRM = URL_FRONT + 'auth/password-reset/confirm/'
