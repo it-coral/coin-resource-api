@@ -1,5 +1,10 @@
 from rest_auth.registration.serializers import RegisterSerializer
 from rest_framework import serializers
+from django.conf import settings
+from allauth.account.adapter import get_adapter
+from allauth.account.utils import setup_user_email
+
+
 
 class CustomRegisterSerializer(RegisterSerializer):
     first_name = serializers.CharField(required=True, write_only=True)
@@ -14,6 +19,7 @@ class CustomRegisterSerializer(RegisterSerializer):
             'last_name': self.validated_data.get('last_name', ''),
             'zip_code' : self.validated_data.get('zip_code', ''),
             'pin' : self.validated_data.get('pin', ''),
+            'phone' : self.validated_data.get('phone', ''),
             'password1': self.validated_data.get('password1', ''),
             'email': self.validated_data.get('email', ''),
         }

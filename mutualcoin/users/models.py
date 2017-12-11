@@ -6,14 +6,12 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.signals import user_logged_in
 from phonenumber_field.modelfields import PhoneNumberField
 
-
-
 @python_2_unicode_compatible
 class User(AbstractUser):
 
     phone = PhoneNumberField()
-    zip_code = models.CharField(null=True, max_length=6)
-    pin = models.CharField(null=True, max_length=4)
+    zip_code = models.CharField(max_length=6)
+    pin = models.CharField(max_length=4)
     approved = models.BooleanField(default=False)
     amount_invested = models.DecimalField(default='0.00', max_digits=12, decimal_places=2)
 
